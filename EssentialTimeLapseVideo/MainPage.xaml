@@ -1,0 +1,152 @@
+﻿
+<Page
+	 x:Class="EssentialTimeLapseVideo.MainPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:EssentialTimeLapseVideo"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d"
+   
+    Width="Auto" Height="Auto" HorizontalAlignment="Center" VerticalAlignment="Center"
+    >
+
+	<Page.Resources>
+		<SolidColorBrush x:Key="TranslucentBlackBrush" Color="Black" Opacity="0.3"/>
+
+
+		<!-- This HoveringButton Template comes from this StackOverflow Thread-->
+		<!-- http://stackoverflow.com/questions/39502204/rounded-buttons-in-xaml-for-a-window-store-app/39521967#39521967  -->
+		<ControlTemplate x:Name="HoveringButton" TargetType="Button">
+
+			<Border BorderThickness="1"
+                        BorderBrush="Green" 
+                        CornerRadius="10"
+                        Padding="4"
+                        Background="{TemplateBinding Background}"
+                        
+                       
+                        Name="TheBorder"
+                        >
+
+				<VisualStateManager.VisualStateGroups>
+					<VisualStateGroup x:Name="CommonStates">
+						<VisualState x:Name="Normal">
+							<VisualState.Setters>
+								<Setter Target="MGrid.Background" Value="#FFB8B1B1"/>
+								<Setter Target="TheBorder.Background" Value="#FFB8B1B1"  />
+
+							</VisualState.Setters>
+						</VisualState>
+
+						<VisualState x:Name="PointerOver">
+							<VisualState.Setters>
+								<Setter Target="MGrid.Background" Value="Green"/>
+								<Setter Target="TheBorder.Background" Value="Green"  />
+							</VisualState.Setters>
+						</VisualState>
+
+						<VisualState x:Name="Pressed">
+							<VisualState.Setters>
+								<Setter Target="MGrid.Background" Value="Blue"/>
+								<Setter Target="TheBorder.Background" Value="Blue"  />
+							</VisualState.Setters>
+						</VisualState>
+
+						<VisualState x:Name="Disabled"/>
+
+
+					</VisualStateGroup>
+				</VisualStateManager.VisualStateGroups>
+
+				<Grid x:Name="MGrid">
+					<ContentControl Content="{TemplateBinding Content}"
+                                        VerticalContentAlignment="Center"
+                                        HorizontalAlignment="Center"
+                                        FontSize="{TemplateBinding FontSize}"
+                                        Foreground="{TemplateBinding Foreground}"
+                                         Background="{TemplateBinding Background}"/>
+				</Grid>
+
+			</Border>
+		</ControlTemplate>
+
+
+	</Page.Resources>
+
+
+	<Grid Background="{ThemeResource ApplicationPageBackgroundThemeBrush}" Name="Versatile" Tapped="Versatile_Tapped" >
+		<Grid.Resources>
+
+
+
+		</Grid.Resources>
+
+
+		<CaptureElement Name="GetTheVideo" Stretch="UniformToFill"></CaptureElement>
+
+		<StackPanel  Orientation="Vertical" Margin="21,25,0,0">
+			<StackPanel Orientation="Horizontal">
+				<Button Name="Reset" x:Uid="ResetButton" Template="{StaticResource HoveringButton}" Width="95" Content="Reset" Tapped="Reset_Tapped"/>
+				<Button Name="Incognito" x:Uid="IncognitoButton" Template="{StaticResource HoveringButton}" Width="85" Content="Incognito" Tapped="Incognito_Tapped"/>
+
+			</StackPanel>
+			<StackPanel Orientation="Horizontal" Margin="0,24,0,0">
+
+				<Border Name="BadBorder" BorderThickness="1" BorderBrush="Black" CornerRadius="3" Padding="2"  Background="#FFE8E6E6"   HorizontalAlignment="Center" VerticalAlignment="Center">
+
+					<TextBox  Name="ProjectName" BorderThickness="0" x:Uid="ProjectName" IsReadOnly="True"  Background="#FFE8E6E6" Foreground="Black" Text="Project Name" Width="165" Height="25"   Opacity="0.75"></TextBox>
+				</Border>
+
+
+				<Button Width="87" Height="42" x:Uid="Confirmation" Name="Confirmation" VerticalAlignment="Top" VerticalContentAlignment="Top"  BorderThickness="0" FontSize="16"  Foreground="Black" Tapped="Confirmation_Tapped" Background="#FFB8B1B1" Template="{StaticResource HoveringButton}"  >Confirm</Button>
+
+
+
+			</StackPanel>
+
+			<StackPanel Orientation="Horizontal">
+				<TextBox Margin="0,21,0,0"  Text="Frame Interval"></TextBox>
+				<ComboBox Name="Interval"  Width="8" Margin="0,21,0,0" SelectionChanged="Interval_SelectionChanged"></ComboBox>
+				<ComboBox Name="HourMinuteSecond"  Width="105" Margin="0,21,0,0" SelectionChanged="HourMinuteSecond_SelectionChanged"></ComboBox>
+				
+
+
+				<!--<Button Name="Reset" x:Uid="ResetButton" Template="{StaticResource HoveringButton}" Width="95" Content="Reset" Tapped="Reset_Tapped"/>
+				<Button Name="Incognito" x:Uid="IncognitoButton" Template="{StaticResource HoveringButton}" Width="85" Content="Incognito" Tapped="Incognito_Tapped"/>-->
+
+			</StackPanel>
+			<Button x:Uid="StartCaptureButton" Template="{StaticResource HoveringButton}" Margin="0,8,0,8" Width="200" Name="startCapture"  Tapped="startCapture_Tapped">Start Recording</Button>
+			<Button x:Uid="StopCaptureButton" Template="{StaticResource HoveringButton}"  Margin="0,8,0,8" Width="200" Name="stopRecording" Tapped="stopRecording_Tapped">Stop Recording</Button>
+			<Button x:Uid="Render" Template="{StaticResource HoveringButton}"  Margin="0,8,0,8" Width="200" Name="render" Tapped="render_Tapped">Render Video</Button>
+
+			
+			<ComboBox x:Name="CameraSource"  x:Uid="CameraSourceCombo"   PlaceholderText="Video Devices" Width="250" Margin="0,42,0,0" SelectionChanged="Devicechanged_Changed2"  />
+
+			<TextBox FontSize="14" Name="NoCamera" Background="Red" IsReadOnly="True" x:Uid="NoCamera" Text="No Camera Found, Camera Required" Visibility="Collapsed" />
+			<TextBox FontSize="14" Name="BadDevice" Background="Red" IsReadOnly="True"  x:Uid="BadDevice" Text="An Incompatable Video Source was found." Visibility="Collapsed" />
+			<TextBox FontSize="14" Name="RecordLimit" Background="Red" IsReadOnly="True" x:Uid="RecordLimit" Text="There is a setting that is incompatable." Visibility="Collapsed" />
+			<!-- From Alpha 5<ComboBox Name="CameraSettings" x:Uid="CameraSettingsCombo" PlaceholderText="Video Size" Width="250" Margin="0,42,0,0" SelectionChanged="ComboBoxSettings_Changed"  />-->
+			<ComboBox Name="CameraSettings2" x:Uid="CameraSettingsCombo" PlaceholderText="Video Size" Width="250" Margin="0,42,0,0" SelectionChanged="ComboBoxSettings_Changed"  />
+			<TextBox FontSize="14" Name="BadSetting" Background="Red" IsReadOnly="True" x:Uid="BadSetting" Text="There is a setting that is incompatable." Visibility="Collapsed" />
+
+
+
+
+			<ProgressRing x:Name="workingProgressRing"/>
+			<Button x:Uid="MakeDonation" Template="{StaticResource HoveringButton}"  Margin="0,24,0,0" Width="200" Name="makeDonation" Tapped="makeDonation_Tapped">Make Donation</Button>
+			<StackPanel Orientation="Horizontal" Name="Donator" Visibility="Collapsed">
+				<Button x:Uid="Donation1" Template="{StaticResource HoveringButton}"  Margin="0,22,12,0" Width="54" Name="Donation1" Tapped="Donation1_Tapped">$1</Button>
+				<Button x:Uid="Donation2" Template="{StaticResource HoveringButton}"  Margin="0,22,12,0" Width="54" Name="Donation2" Tapped="Donation2_Tapped">$2</Button>
+				<Button x:Uid="Donation3" Template="{StaticResource HoveringButton}"  Margin="0,22,12,0" Width="54" Name="Donation3" Tapped="Donation3_Tapped">$3</Button>
+			</StackPanel>
+			<TextBox Name="storeResult" Background="Red" Visibility="Collapsed"  />
+			<TextBox x:Uid="ManyThanks" TextAlignment="Center" Name="ManyThanks" IsReadOnly="True"  Background="LawnGreen" Foreground="Black" Width="325" Visibility="Collapsed"  Text="Huh???"/>
+			<!--From Alpha 5  <TextBox x:Uid="Reset-Info" Margin ="0,24,0,0"  TextAlignment="Center" Name="Info" IsReadOnly="True" Background="Goldenrod" Foreground="Black" Width="385" Visibility="Visible" IsDoubleTapEnabled="False" IsHoldingEnabled="False" IsRightTapEnabled="False" IsTapEnabled="False" ManipulationMode="None"   />-->
+
+		</StackPanel>
+	</Grid>
+</Page>
+	
+	
+	
