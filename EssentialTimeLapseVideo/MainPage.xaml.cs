@@ -30,6 +30,7 @@ using Windows.Services.Store;
 using Windows.Devices.Enumeration;
 using System.Diagnostics;
 using Windows.Storage.Search;
+using System.Threading;
 
 // The Blank Page item template is documented at http://go.microsoft.com/fwlink/?LinkId=402352&clcid=0x409
 
@@ -52,6 +53,7 @@ namespace EssentialTimeLapseVideo
 		int incognitoer = 0;
 		private static readonly Guid RotationKey = new Guid("C380465D-2271-428C-9B83-ECEA3B4A85C1");  //I have no idea what this is, but you need it :-)
 
+		int HowManySecondsBetween = 0;
 		private bool filejustcreated = false;
 
 		public ResourceLoader languageLoader;
@@ -144,7 +146,7 @@ namespace EssentialTimeLapseVideo
 			HourMinuteSecond.Items.Add(k);
 
 			ComboBoxItem l = new ComboBoxItem();
-			l.Content = "Second";
+			l.Content = "Seconds";
 			DarnSeconds w = new DarnSeconds();
 			w.HowManyDarnSeconds = 1;
 			l.Tag = w;
@@ -417,12 +419,12 @@ namespace EssentialTimeLapseVideo
 
 		}
 
-		private async void startRecording_Tapped(object sender, TappedRoutedEventArgs e)
+		/*private async void startRecording_Tapped(object sender, TappedRoutedEventArgs e)
 		{
 			try
 			{
 				isRecording = true;
-				startRecording.Visibility = Visibility.Collapsed;
+				//startRecording.Visibility = Visibility.Collapsed;
 
 
 
@@ -474,7 +476,7 @@ namespace EssentialTimeLapseVideo
                        videoFile = await captureFolder.CreateFileAsync(vidname, CreationCollisionOption.GenerateUniqueName);
                    }
                    else filejustcreated = false;
-                   */
+          
 
 
 				Debug.WriteLine("Starting recording to " + videoFile.Path);
@@ -492,7 +494,7 @@ namespace EssentialTimeLapseVideo
 				Debug.WriteLine(ex.Message);
 
 			}
-		}
+		}*/
 
 		private async void stopRecording_Tapped(object sender, TappedRoutedEventArgs e)
 		{
@@ -505,7 +507,7 @@ namespace EssentialTimeLapseVideo
 				//GetFileName.IsEnabled = true;
 				CameraSettings2.IsEnabled = true;
 				CameraSource.IsEnabled = true;
-				startRecording.Visibility = Visibility.Visible;
+				//startRecording.Visibility = Visibility.Visible;
 				//VideoName.Text = "Pick New File Name";
 				videoFile = null;
 
@@ -696,6 +698,20 @@ namespace EssentialTimeLapseVideo
 			Donator.Visibility = Visibility.Collapsed;
 		}
 
+
+		private async void TakePicture()
+		{
+			StorageFile z = await PictureLapsesFolder.CreateFileAsync("Lapses.bmp", CreationCollisionOption.GenerateUniqueName);
+			ImageEncodingProperties q = ImageEncodingProperties.CreateBmp();
+			//q.Height = 400;
+			//q.Width = 400;
+
+
+			await _mediaCapture.CapturePhotoToStorageFileAsync(q, z);
+
+		}
+
+
 		private async void Reset_Tapped(object sender, TappedRoutedEventArgs e)
 		{
 
@@ -722,7 +738,7 @@ namespace EssentialTimeLapseVideo
 
 			//queryOptions = CommonFileQuery.OrderByName;
 
-			queryOptions.UserSearchFilter = "Radio1";
+			queryOptions.UserSearchFilter = "Lapses";
 			//StorageFileQueryResult queryResult = musicFolder.CreateFileQueryWithOptions(queryOptions);
 
 
@@ -736,7 +752,7 @@ namespace EssentialTimeLapseVideo
 
 			//qbert.
 
-			StorageFileQueryResult z = KnownFolders.VideosLibrary.CreateFileQueryWithOptions(queryOptions);
+			StorageFileQueryResult z = PictureLapsesFolder.CreateFileQueryWithOptions(queryOptions);
 
 			IReadOnlyList<StorageFile> files = await z.GetFilesAsync();
 
@@ -757,7 +773,7 @@ namespace EssentialTimeLapseVideo
 
 
 			string desiredName = "test.mp4";
-			StorageFolder localFolder = KnownFolders.VideosLibrary;
+			StorageFolder localFolder = ProjectFolder;
 			Windows.Storage.StorageFile pickedVidFile = await localFolder.CreateFileAsync(desiredName, CreationCollisionOption.GenerateUniqueName);
 
 
@@ -830,12 +846,42 @@ namespace EssentialTimeLapseVideo
 
 		}
 
-		private void startCapture_Tapped(object sender, TappedRoutedEventArgs e)
+		private async void startCapture_Tapped(object sender, TappedRoutedEventArgs e)
 		{
+			DarnSeconds j = (DarnSeconds)((ComboBoxItem)Interval.SelectedItem).Tag;
+
+			String k = (string)((ComboBoxItem)HourMinuteSecond.SelectedItem).Content;
+			//j.HowManyDarnSeconds;
+
+			if (k  == "Hours")
+			{
+				HowManySecondsBetween = j.HowManyDarnSeconds * 360;
+
+			}
+			else if (k == "Minutes")
+			{
+				HowManySecondsBetween = j.HowManyDarnSeconds * 60;
+			}
+			else HowManySecondsBetween = j.HowManyDarnSeconds;
 
 
+			int i = 1;
 
 
+			isRecording = true;
+			while (isRecording)
+			{
+				 await Task.Delay(HowManySecondsBetween * 1000);
+				if (i++ > 300) isRecording = false;
+				StorageFile z = await PictureLapsesFolder.CreateFileAsync("Lapses.bmp", CreationCollisionOption.GenerateUniqueName);
+				ImageEncodingProperties q = ImageEncodingProperties.CreateBmp();
+				//q.Height = 400;
+				//q.Width = 400;
+
+
+				await _mediaCapture.CapturePhotoToStorageFileAsync(q, z);
+
+			}
 
 
 
@@ -846,7 +892,7 @@ namespace EssentialTimeLapseVideo
 
 		private void render_Tapped(object sender, TappedRoutedEventArgs e)
 		{
-
+			FrameCapture();
 		}
 
 		private void Confirmation_Tapped(object sender, TappedRoutedEventArgs e)
