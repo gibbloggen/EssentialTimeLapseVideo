@@ -117,7 +117,7 @@
 
 			</StackPanel>
 			<Button x:Uid="StartCaptureButton" Template="{StaticResource HoveringButton}" Margin="0,8,0,8" Width="200" Name="startCapture"  Tapped="startCapture_Tapped">Start Recording</Button>
-			<Button x:Uid="StopCaptureButton" Template="{StaticResource HoveringButton}"  Margin="0,8,0,8" Width="200" Name="stopRecording" Tapped="stopRecording_Tapped">Stop Recording</Button>
+			<Button x:Uid="StopCaptureButton" Template="{StaticResource HoveringButton}"  Margin="0,8,0,8" Width="200" Name="stopCapture" Tapped="stopCapture_Tapped">Stop Recording</Button>
 			<Button x:Uid="Render" Template="{StaticResource HoveringButton}"  Margin="0,8,0,8" Width="200" Name="render" Tapped="render_Tapped">Render Video</Button>
 
 			

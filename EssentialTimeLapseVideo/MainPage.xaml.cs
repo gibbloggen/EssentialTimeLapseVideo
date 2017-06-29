@@ -129,12 +129,12 @@ namespace EssentialTimeLapseVideo
 		}
 		private void InitTime()
 		{
-			ComboBoxItem j = new ComboBoxItem();
-			j.Content = "Hours";
+			//ComboBoxItem j = new ComboBoxItem();
+			//j.Content = "Hours";
 			DarnSeconds z = new DarnSeconds();
-			z.HowManyDarnSeconds = 60 * 60;
-			j.Tag = z;
-			HourMinuteSecond.Items.Add(j);
+			//z.HowManyDarnSeconds = 60 * 60;
+			//j.Tag = z;
+			//HourMinuteSecond.Items.Add(j);
 
 			
 			ComboBoxItem k = new ComboBoxItem();
@@ -154,13 +154,28 @@ namespace EssentialTimeLapseVideo
 
 			HourMinuteSecond.SelectedIndex = 1;
 
+			int looper = 61;
+			for (int i = 1; i < looper; i++)
+			{
+				ComboBoxItem j = new ComboBoxItem();
+
+				j.Content = i.ToString();
+				DarnSeconds t = new DarnSeconds();
+				t.HowManyDarnSeconds = i;
+
+				j.Tag = t;
+				Interval.Items.Add(j);
+
+			}
+			Interval.SelectedIndex = 0;
+
 
 		}
 
 		private async void InitCamera()
 
 		{
-			stopRecording.Visibility = Visibility.Collapsed;
+			stopCapture.Visibility = Visibility.Collapsed;
 			var videosLibrary = await StorageLibrary.GetLibraryAsync(KnownLibraryId.Videos);
 			captureFolder = videosLibrary.SaveFolder ?? ApplicationData.Current.LocalFolder;
 
@@ -496,12 +511,15 @@ namespace EssentialTimeLapseVideo
 			}
 		}*/
 
-		private async void stopRecording_Tapped(object sender, TappedRoutedEventArgs e)
+		private async void stopCapture_Tapped(object sender, TappedRoutedEventArgs e)
 		{
 			isRecording = false;
+			startCapture.Visibility = Visibility.Visible;
+
 			try
 			{
-				stopRecording.Visibility = Visibility.Collapsed;
+				stopCapture.Visibility = Visibility.Collapsed;
+
 				await _mediaCapture.StopRecordAsync();
 				//VideoName.IsEnabled = true;
 				//GetFileName.IsEnabled = true;
@@ -734,7 +752,7 @@ namespace EssentialTimeLapseVideo
 			List<string> fileTypeFilter = new List<string>();
 			fileTypeFilter.Add("*");
 
-			QueryOptions queryOptions = new QueryOptions(CommonFileQuery.OrderBySearchRank, fileTypeFilter);
+			QueryOptions queryOptions = new QueryOptions(CommonFileQuery.DefaultQuery, fileTypeFilter);
 
 			//queryOptions = CommonFileQuery.OrderByName;
 
@@ -756,7 +774,7 @@ namespace EssentialTimeLapseVideo
 
 			IReadOnlyList<StorageFile> files = await z.GetFilesAsync();
 
-
+			files.OrderBy(x => x.DateCreated);
 			/*
 			var picker = new Windows.Storage.Pickers.FileOpenPicker();
 			picker.SuggestedStartLocation = Windows.Storage.Pickers.PickerLocationId.PicturesLibrary;
@@ -816,7 +834,7 @@ namespace EssentialTimeLapseVideo
 
 		private void HourMinuteSecond_SelectionChanged(object sender, SelectionChangedEventArgs e)
 		{
-			Interval.Items.Clear();
+			/*Interval.Items.Clear();
 
 
 			
@@ -825,20 +843,9 @@ namespace EssentialTimeLapseVideo
 			int looper = 25;
 			if ((f.HowManyDarnSeconds == 1) || (f.HowManyDarnSeconds == 60)) looper = 61;
 			
-				for (int i = 1; i < looper; i++)
-				{
-					ComboBoxItem j = new ComboBoxItem();
+				
 
-					j.Content = i.ToString();
-					DarnSeconds t = new DarnSeconds();
-					t.HowManyDarnSeconds = i;
-
-					j.Tag = t;
-					Interval.Items.Add(j);
-
-				}
-
-			Interval.SelectedIndex = 0;
+			Interval.SelectedIndex = 0;*/
 		}
 
 		private void GetProjectName_Tapped(object sender, TappedRoutedEventArgs e)
@@ -848,6 +855,8 @@ namespace EssentialTimeLapseVideo
 
 		private async void startCapture_Tapped(object sender, TappedRoutedEventArgs e)
 		{
+			startCapture.Visibility = Visibility.Collapsed;
+			
 			DarnSeconds j = (DarnSeconds)((ComboBoxItem)Interval.SelectedItem).Tag;
 
 			String k = (string)((ComboBoxItem)HourMinuteSecond.SelectedItem).Content;
@@ -869,10 +878,17 @@ namespace EssentialTimeLapseVideo
 
 
 			isRecording = true;
+			stopCapture.Visibility = Visibility.Visible;
+
+		//	if (_mediaCapture == null)
+		//	{
+		//		await _mediaCapture.InitializeAsync();
+		//	}
+
 			while (isRecording)
 			{
-				 await Task.Delay(HowManySecondsBetween * 1000);
-				if (i++ > 300) isRecording = false;
+				
+				//if (i++ > 300) isRecording = false;
 				StorageFile z = await PictureLapsesFolder.CreateFileAsync("Lapses.bmp", CreationCollisionOption.GenerateUniqueName);
 				ImageEncodingProperties q = ImageEncodingProperties.CreateBmp();
 				//q.Height = 400;
@@ -880,7 +896,7 @@ namespace EssentialTimeLapseVideo
 
 
 				await _mediaCapture.CapturePhotoToStorageFileAsync(q, z);
-
+				await Task.Delay(HowManySecondsBetween * 1000);
 			}
 
 
