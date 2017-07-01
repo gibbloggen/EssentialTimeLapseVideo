@@ -91,7 +91,7 @@
 		<StackPanel  Orientation="Vertical" Margin="21,25,0,0">
 			<StackPanel Orientation="Horizontal">
 				<Button Name="Reset" x:Uid="ResetButton" Template="{StaticResource HoveringButton}" Width="95" Content="Reset" Tapped="Reset_Tapped"/>
-				<!--<Button Name="Incognito" x:Uid="IncognitoButton" Template="{StaticResource HoveringButton}" Width="85" Content="Incognito" Tapped="Incognito_Tapped"/>-->
+				<Button Name="HelpPage" x:Uid="HelpPage" Template="{StaticResource HoveringButton}" Width="125" Content="HelpPage" Tapped="HelpPage_Tapped" />
 
 			</StackPanel>
 			<StackPanel Orientation="Horizontal" Margin="0,24,0,0">
@@ -124,6 +124,9 @@
 			</StackPanel>
 			<Button x:Uid="StartCaptureButton" Template="{StaticResource HoveringButton}" Margin="0,8,0,8" Width="200" Name="startCapture"  Tapped="startCapture_Tapped">Start Recording</Button>
 			<Button x:Uid="StopCaptureButton" Template="{StaticResource HoveringButton}"  Margin="0,8,0,8" Width="200" Name="stopCapture" Tapped="stopCapture_Tapped">Stop Recording</Button>
+			<TextBox FontSize="14" Name="PleaseWait" Background="GreenYellow" IsReadOnly="True" x:Uid="PleaseWait" HorizontalAlignment="Left" Text="Please wait for last frame."  Width="352" Visibility="Collapsed" />
+
+
 			<Button x:Uid="Render" Template="{StaticResource HoveringButton}"  Margin="0,8,0,8" Width="200" Name="render" Tapped="render_Tapped">Render Video</Button>
 
 			

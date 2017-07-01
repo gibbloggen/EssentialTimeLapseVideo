@@ -424,10 +424,7 @@ namespace EssentialTimeLapseVideo
 			isRecording = false;
 		}
 
-		private void Incognito_Tapped(object sender, TappedRoutedEventArgs e)
-		{
-			FrameCapture();
-		}
+		
 
 		private void Versatile_Tapped(object sender, TappedRoutedEventArgs e)
 		{
@@ -511,16 +508,16 @@ namespace EssentialTimeLapseVideo
 			}
 		}*/
 
-		private async void stopCapture_Tapped(object sender, TappedRoutedEventArgs e)
+		private  void stopCapture_Tapped(object sender, TappedRoutedEventArgs e)
 		{
 			isRecording = false;
-
+			PleaseWait.Visibility = Visibility.Visible;
 			
 			
 
-			try
+		/*	try
 			{
-				stopCapture.Visibility = Visibility.Collapsed;
+			stopCapture.Visibility = Visibility.Collapsed;
 				render.Visibility = Visibility.Visible;
 				startCapture.Visibility = Visibility.Visible;
 
@@ -543,7 +540,7 @@ namespace EssentialTimeLapseVideo
 			catch (Exception ex)
 			{
 				Debug.WriteLine(ex.Message);
-			}
+			}*/
 		}
 
 		private async void GetFileName_Tapped(object sender, TappedRoutedEventArgs e)
@@ -870,6 +867,8 @@ namespace EssentialTimeLapseVideo
 			render.Visibility = Visibility.Collapsed;
 
 			IncrementProject.IsEnabled = false;
+			IncrementProject.Opacity = .65;
+
 			//Interval.IsEnabled = false;
 			Interval.Visibility = Visibility.Collapsed;
 			tbInterval.Visibility = Visibility.Visible;
@@ -884,6 +883,8 @@ namespace EssentialTimeLapseVideo
 			CameraSettings2.Visibility = Visibility.Collapsed;
 			tbCameraSetting.Visibility = Visibility.Visible; 
 			tbCameraSetting.Text = (string)((ComboBoxItem)CameraSettings2.SelectedItem).Content;
+
+			
 
 
 			
@@ -937,8 +938,29 @@ namespace EssentialTimeLapseVideo
 			}
 
 
+			
+			render.Visibility = Visibility.Visible;
 
+			IncrementProject.IsEnabled = false;
+			IncrementProject.Opacity = .65;
 
+			//Interval.IsEnabled = false;
+			Interval.Visibility = Visibility.Visible;
+			tbInterval.Visibility = Visibility.Collapsed;
+			//tbInterval.Text = (string)((ComboBoxItem)Interval.SelectedItem).Content;
+			HourMinuteSecond.Visibility = Visibility.Visible;
+			//tbHourMinuteSecond.Text = (string)((ComboBoxItem)HourMinuteSecond.SelectedItem).Content;
+			tbHourMinuteSecond.Visibility = Visibility.Collapsed;
+			CameraSource.Visibility = Visibility.Visible;
+			tbCameraSource.Visibility = Visibility.Collapsed;
+			//tbCameraSource.Text = (string)((ComboBoxItem)CameraSource.SelectedItem).Content;
+
+			CameraSettings2.Visibility = Visibility.Visible;
+			tbCameraSetting.Visibility = Visibility.Collapsed;
+			//tbCameraSetting.Text = (string)((ComboBoxItem)CameraSettings2.SelectedItem).Content;
+			stopCapture.Visibility = Visibility.Collapsed;
+			startCapture.Visibility = Visibility.Visible;
+			PleaseWait.Visibility = Visibility.Collapsed;
 
 
 		}
@@ -973,6 +995,16 @@ namespace EssentialTimeLapseVideo
 		private void CameraSource_Tapped(object sender, TappedRoutedEventArgs e)
 		{
 			
+		}
+
+		private void HelpPage_Tapped(object sender, TappedRoutedEventArgs e)
+		{
+			//Help j;
+		
+			Frame.Navigate(typeof(Help));
+			
+			//j.Visibility = Visibility.Visible;
+	
 		}
 	}
 	class DarnSeconds
