@@ -514,17 +514,27 @@ namespace EssentialTimeLapseVideo
 		private async void stopCapture_Tapped(object sender, TappedRoutedEventArgs e)
 		{
 			isRecording = false;
-			startCapture.Visibility = Visibility.Visible;
+
+			
+			
 
 			try
 			{
 				stopCapture.Visibility = Visibility.Collapsed;
+				render.Visibility = Visibility.Visible;
+				startCapture.Visibility = Visibility.Visible;
 
-				await _mediaCapture.StopRecordAsync();
+				//await _mediaCapture.StopRecordAsync();
 				//VideoName.IsEnabled = true;
 				//GetFileName.IsEnabled = true;
 				CameraSettings2.IsEnabled = true;
 				CameraSource.IsEnabled = true;
+
+				IncrementProject.IsEnabled = true;
+				Interval.IsEnabled = true;
+				HourMinuteSecond.IsEnabled = true;
+				
+				
 				//startRecording.Visibility = Visibility.Visible;
 				//VideoName.Text = "Pick New File Name";
 				videoFile = null;
@@ -617,7 +627,8 @@ namespace EssentialTimeLapseVideo
 		private void Devicechanged_Changed2(object sender, SelectionChangedEventArgs e)
 		{
 			if (CameraSource.Items.Count == 0) return;
-			else Devicechanged();
+
+			Devicechanged();
 		}
 
 		private void makeDonation_Tapped(object sender, TappedRoutedEventArgs e)
@@ -730,7 +741,7 @@ namespace EssentialTimeLapseVideo
 		}
 
 
-		private async void Reset_Tapped(object sender, TappedRoutedEventArgs e)
+		/*private async void Reset_Tapped(object sender, TappedRoutedEventArgs e)
 		{
 
 
@@ -744,7 +755,7 @@ namespace EssentialTimeLapseVideo
 			await _mediaCapture.CapturePhotoToStorageFileAsync(q, z);
 
 
-		}
+		}*/
 
 		private async void FrameCapture()
 		{
@@ -856,6 +867,32 @@ namespace EssentialTimeLapseVideo
 		private async void startCapture_Tapped(object sender, TappedRoutedEventArgs e)
 		{
 			startCapture.Visibility = Visibility.Collapsed;
+			render.Visibility = Visibility.Collapsed;
+
+			IncrementProject.IsEnabled = false;
+			//Interval.IsEnabled = false;
+			Interval.Visibility = Visibility.Collapsed;
+			tbInterval.Visibility = Visibility.Visible;
+			tbInterval.Text = (string)((ComboBoxItem)Interval.SelectedItem).Content;
+			HourMinuteSecond.Visibility = Visibility.Collapsed;
+			tbHourMinuteSecond.Text = (string)((ComboBoxItem)HourMinuteSecond.SelectedItem).Content;
+			tbHourMinuteSecond.Visibility = Visibility.Visible;
+			CameraSource.Visibility = Visibility.Collapsed;
+			tbCameraSource.Visibility = Visibility.Visible; 
+			tbCameraSource.Text = (string)((ComboBoxItem)CameraSource.SelectedItem).Content;
+
+			CameraSettings2.Visibility = Visibility.Collapsed;
+			tbCameraSetting.Visibility = Visibility.Visible; 
+			tbCameraSetting.Text = (string)((ComboBoxItem)CameraSettings2.SelectedItem).Content;
+
+
+			
+
+
+
+
+
+
 			
 			DarnSeconds j = (DarnSeconds)((ComboBoxItem)Interval.SelectedItem).Tag;
 
@@ -906,14 +943,36 @@ namespace EssentialTimeLapseVideo
 
 		}
 
+
+		private void Reset_Tapped(object sender, TappedRoutedEventArgs e)
+		{
+
+			// Versatile.Height = 480;
+			//Versatile.Width = 640;
+			BadDevice.Visibility = Visibility.Collapsed;
+			BadSetting.Visibility = Visibility.Collapsed;
+			NoCamera.Visibility = Visibility.Collapsed;
+			RecordLimit.Visibility = Visibility.Collapsed;
+			ManyThanks.Visibility = Visibility.Collapsed;
+			CameraSource.Items.Clear();
+			InitCamera();
+			//CameraSettings2.SelectedIndex = -1;
+
+		}
 		private void render_Tapped(object sender, TappedRoutedEventArgs e)
 		{
 			FrameCapture();
 		}
 
-		private void Confirmation_Tapped(object sender, TappedRoutedEventArgs e)
-		{
 
+		private void IncrementProject_Tapped(object sender, TappedRoutedEventArgs e)
+		{
+			CheckForVideoFolders();
+		}
+
+		private void CameraSource_Tapped(object sender, TappedRoutedEventArgs e)
+		{
+			
 		}
 	}
 	class DarnSeconds
