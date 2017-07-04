@@ -782,6 +782,13 @@ namespace EssentialTimeLapseVideo
 
 			IReadOnlyList<StorageFile> files = await z.GetFilesAsync();
 
+			if (files.Count == 0)
+			{
+				NoFiles.Visibility = Visibility.Visible;
+				return;
+			}
+
+
 			files.OrderBy(x => x.DateCreated);
 			/*
 			var picker = new Windows.Storage.Pickers.FileOpenPicker();
@@ -802,6 +809,7 @@ namespace EssentialTimeLapseVideo
 			StorageFolder localFolder = ProjectFolder;
 			Windows.Storage.StorageFile pickedVidFile = await localFolder.CreateFileAsync(desiredName, CreationCollisionOption.GenerateUniqueName);
 
+			
 
 			foreach (StorageFile j in files)
 			{
@@ -864,6 +872,7 @@ namespace EssentialTimeLapseVideo
 		private async void startCapture_Tapped(object sender, TappedRoutedEventArgs e)
 		{
 			startCapture.Visibility = Visibility.Collapsed;
+			NoFiles.Visibility = Visibility.Collapsed;
 			render.Visibility = Visibility.Collapsed;
 
 			IncrementProject.IsEnabled = false;
@@ -971,6 +980,7 @@ namespace EssentialTimeLapseVideo
 
 			// Versatile.Height = 480;
 			//Versatile.Width = 640;
+			NoFiles.Visibility = Visibility.Collapsed;
 			BadDevice.Visibility = Visibility.Collapsed;
 			BadSetting.Visibility = Visibility.Collapsed;
 			NoCamera.Visibility = Visibility.Collapsed;

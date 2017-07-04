@@ -128,8 +128,9 @@
 
 
 			<Button x:Uid="Render" Template="{StaticResource HoveringButton}"  Margin="0,8,0,8" Width="200" Name="render" Tapped="render_Tapped">Render Video</Button>
+			<TextBox FontSize="14" Name="NoFiles" Background="Red" IsReadOnly="True" x:Uid="NoFiles" Text="No files to render, you must record first." Visibility="Collapsed" />
 
-			
+
 			<ComboBox x:Name="CameraSource"  x:Uid="CameraSourceCombo"   PlaceholderText="Video Devices" Width="250" Margin="0,42,0,0"  SelectionChanged="Devicechanged_Changed2" Opacity="1.0"   />
 			<TextBox Name="tbCameraSource" Width="250" TextAlignment="Left"   Margin="0,42,0,0" IsReadOnly="True" Visibility="Collapsed" HorizontalAlignment="Left" Opacity=".7" />
 
