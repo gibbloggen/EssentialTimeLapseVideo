@@ -30,6 +30,7 @@ namespace EssentialTimeLapseVideo
         {
             this.InitializeComponent();
             this.Suspending += OnSuspending;
+			
         }
 
         /// <summary>

@@ -31,6 +31,8 @@ using Windows.Devices.Enumeration;
 using System.Diagnostics;
 using Windows.Storage.Search;
 using System.Threading;
+using Windows.UI.ViewManagement;
+using Windows.ApplicationModel;
 
 // The Blank Page item template is documented at http://go.microsoft.com/fwlink/?LinkId=402352&clcid=0x409
 
@@ -68,12 +70,28 @@ namespace EssentialTimeLapseVideo
 		public MainPage()
         {
             this.InitializeComponent();
+
+			
+			ApplicationView.GetForCurrentView().Title = "Version " + GetAppVersion() + " ";
+			
+
 			composition = new MediaComposition();
 			CheckForVideoFolders();
 			InitCamera();
-			InitTime();
+			InitTimeAndFPS();
 
 			Window.Current.SizeChanged += Current_SizeChanged;
+
+		}
+
+		public static string GetAppVersion()
+		{
+
+			Package package = Package.Current;
+			PackageId packageId = package.Id;
+			PackageVersion version = packageId.Version;
+
+			return string.Format("{0}.{1}.{2}.{3}", version.Major, version.Minor, version.Build, version.Revision);
 
 		}
 
@@ -127,7 +145,7 @@ namespace EssentialTimeLapseVideo
 
 
 		}
-		private void InitTime()
+		private void InitTimeAndFPS()
 		{
 			//ComboBoxItem j = new ComboBoxItem();
 			//j.Content = "Hours";
@@ -169,6 +187,25 @@ namespace EssentialTimeLapseVideo
 			}
 			Interval.SelectedIndex = 0;
 
+
+			decimal MilliForFPS = (decimal)1000;
+
+			looper = 61;
+			for (int i = 1; i < looper; i++)
+			{
+				ComboBoxItem j = new ComboBoxItem();
+
+				j.Content = i.ToString();
+				DarnSeconds t = new DarnSeconds();
+				Decimal fps = (Decimal)MilliForFPS/i;
+				t.HowManyDarnSeconds = (int)Math.Round(fps,0);
+
+				j.Tag = t;
+				FramesPerSecond.Items.Add(j);
+
+			}
+
+			FramesPerSecond.SelectedIndex = 9;
 
 		}
 
@@ -512,6 +549,7 @@ namespace EssentialTimeLapseVideo
 		{
 			isRecording = false;
 			PleaseWait.Visibility = Visibility.Visible;
+
 			
 			
 
@@ -757,6 +795,10 @@ namespace EssentialTimeLapseVideo
 		private async void FrameCapture()
 		{
 
+			RenderComplete.Visibility = Visibility.Collapsed;
+
+			composition = new MediaComposition();
+
 			List<string> fileTypeFilter = new List<string>();
 			fileTypeFilter.Add("*");
 
@@ -804,10 +846,15 @@ namespace EssentialTimeLapseVideo
 
 	*/
 
+			String framesPS = (FramesPerSecond.SelectedIndex + 1).ToString("D2");
 
-			string desiredName = "test.mp4";
+			string desiredName = "Rendered-" + framesPS + "-FPS.mp4";
+
 			StorageFolder localFolder = ProjectFolder;
 			Windows.Storage.StorageFile pickedVidFile = await localFolder.CreateFileAsync(desiredName, CreationCollisionOption.GenerateUniqueName);
+
+
+			DarnSeconds q = (DarnSeconds)((ComboBoxItem)FramesPerSecond.SelectedItem).Tag;
 
 			
 
@@ -825,8 +872,9 @@ namespace EssentialTimeLapseVideo
 				// These files could be picked from a location that we won't have access to later
 				var storageItemAccessList = Windows.Storage.AccessCache.StorageApplicationPermissions.FutureAccessList;
 				//torageItemAccessList.Add(pickedFile);
+				
 
-				var clip = await MediaClip.CreateFromImageFileAsync(j, TimeSpan.FromSeconds(1));
+				var clip = await MediaClip.CreateFromImageFileAsync(j, TimeSpan.FromMilliseconds(q.HowManyDarnSeconds));
 
 				composition.Clips.Add(clip);
 
@@ -838,6 +886,8 @@ namespace EssentialTimeLapseVideo
 
 
 			await composition.RenderToFileAsync(pickedVidFile);
+
+			RenderComplete.Visibility = Visibility.Visible;
 
 			//await composition.SaveAsync(MediaStreamSample);
 
@@ -874,6 +924,7 @@ namespace EssentialTimeLapseVideo
 			startCapture.Visibility = Visibility.Collapsed;
 			NoFiles.Visibility = Visibility.Collapsed;
 			render.Visibility = Visibility.Collapsed;
+			RenderComplete.Visibility = Visibility.Collapsed;
 
 			IncrementProject.IsEnabled = false;
 			IncrementProject.Opacity = .65;
@@ -950,8 +1001,9 @@ namespace EssentialTimeLapseVideo
 			
 			render.Visibility = Visibility.Visible;
 
-			IncrementProject.IsEnabled = false;
-			IncrementProject.Opacity = .65;
+			
+			IncrementProject.IsEnabled = true;
+			IncrementProject.Opacity = 1.0;
 
 			//Interval.IsEnabled = false;
 			Interval.Visibility = Visibility.Visible;
@@ -977,6 +1029,34 @@ namespace EssentialTimeLapseVideo
 
 		private void Reset_Tapped(object sender, TappedRoutedEventArgs e)
 		{
+			isRecording = false;
+
+			startCapture.Visibility = Visibility.Visible;
+			render.Visibility = Visibility.Visible;
+			RenderComplete.Visibility = Visibility.Collapsed;
+
+			IncrementProject.IsEnabled = true;
+			IncrementProject.Opacity = 1.0;
+
+			Interval.Visibility = Visibility.Visible;
+			tbInterval.Visibility = Visibility.Collapsed;
+			HourMinuteSecond.Visibility = Visibility.Visible;
+			tbHourMinuteSecond.Visibility = Visibility.Collapsed;
+
+			CameraSource.Visibility = Visibility.Visible;
+			tbCameraSource.Visibility = Visibility.Collapsed;
+			CameraSettings2.Visibility = Visibility.Visible;
+			tbCameraSetting.Visibility = Visibility.Collapsed;
+
+			FramesPerSecond.Visibility = Visibility.Visible;
+			FramesPerSecond.SelectedIndex = 9;
+			fps.Visibility = Visibility.Collapsed;
+
+			Donator.Visibility = Visibility.Collapsed;
+			storeResult.Visibility = Visibility.Collapsed;
+			ManyThanks.Visibility = Visibility.Collapsed;
+
+
 
 			// Versatile.Height = 480;
 			//Versatile.Width = 640;
@@ -988,6 +1068,10 @@ namespace EssentialTimeLapseVideo
 			ManyThanks.Visibility = Visibility.Collapsed;
 			CameraSource.Items.Clear();
 			InitCamera();
+
+			Interval.SelectedIndex = 0;
+
+
 			//CameraSettings2.SelectedIndex = -1;
 
 		}
@@ -1015,6 +1099,11 @@ namespace EssentialTimeLapseVideo
 			
 			//j.Visibility = Visibility.Visible;
 	
+		}
+
+		private void FramesPerSecond_SelectionChanged(object sender, SelectionChangedEventArgs e)
+		{
+
 		}
 	}
 	class DarnSeconds
