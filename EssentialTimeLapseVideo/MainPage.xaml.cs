@@ -765,8 +765,8 @@ namespace EssentialTimeLapseVideo
 
 		private async void TakePicture()
 		{
-			StorageFile z = await PictureLapsesFolder.CreateFileAsync("Lapses.bmp", CreationCollisionOption.GenerateUniqueName);
-			ImageEncodingProperties q = ImageEncodingProperties.CreateBmp();
+			StorageFile z = await PictureLapsesFolder.CreateFileAsync("Lapses.png", CreationCollisionOption.GenerateUniqueName);
+			ImageEncodingProperties q = ImageEncodingProperties.CreatePng();
 			//q.Height = 400;
 			//q.Width = 400;
 
@@ -987,8 +987,8 @@ namespace EssentialTimeLapseVideo
 			{
 				
 				//if (i++ > 300) isRecording = false;
-				StorageFile z = await PictureLapsesFolder.CreateFileAsync("Lapses.bmp", CreationCollisionOption.GenerateUniqueName);
-				ImageEncodingProperties q = ImageEncodingProperties.CreateBmp();
+				StorageFile z = await PictureLapsesFolder.CreateFileAsync("Lapses.png", CreationCollisionOption.GenerateUniqueName);
+				ImageEncodingProperties q = ImageEncodingProperties.CreatePng();
 				//q.Height = 400;
 				//q.Width = 400;
 
