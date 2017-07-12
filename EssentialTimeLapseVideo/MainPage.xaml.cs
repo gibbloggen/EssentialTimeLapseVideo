@@ -1,27 +1,42 @@
-﻿using System;
+﻿/*
+            Program: Essential Time Lapse Video
+            Author:  John Leone
+            Email:   gibbloggen@gmail.com
+            Date:    9-10-2016
+            License: MIT License
+            Purpose: A Universal Windows app for both win 10 desktop and mobile
+
+
+
+The MIT License (MIT) 
+Copyright (c) <2017> <John Leone, gibbloggen@gmail.com>
+
+Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+
+
+References for this program,,,
+
+1)   https://msdn.microsoft.com/en-us/windows/uwp/audio-video-camera/camera  Took bits and pieces of this very helpful
+2)   Various Stack Overflow searches.
+3)   This was developed from my earlier work, and also a current program in the windows 10 store.  That program is multi-lingual
+   it is my ambition to make this multilingual also in the future, but, for now, it is english only.
+*/
+
+
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Runtime.InteropServices.WindowsRuntime;
-using Windows.Foundation;
-using Windows.Foundation.Collections;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
-using Windows.UI.Xaml.Controls.Primitives;
-using Windows.UI.Xaml.Data;
 using Windows.UI.Xaml.Input;
-using Windows.UI.Xaml.Media;
-using Windows.UI.Xaml.Navigation;
-
 using Windows.Storage;
 using Windows.Storage.Pickers;
-using Windows.Storage.Streams;
-using Windows.Graphics.Imaging;
-using Windows.UI.Xaml.Media.Imaging;
-
 using Windows.Media.Editing;
-using Windows.Media.Core;
-using Windows.Media.Playback;
 using System.Threading.Tasks;
 using Windows.Media.Capture;
 using Windows.Media.MediaProperties;
@@ -30,7 +45,6 @@ using Windows.Services.Store;
 using Windows.Devices.Enumeration;
 using System.Diagnostics;
 using Windows.Storage.Search;
-using System.Threading;
 using Windows.UI.ViewManagement;
 using Windows.ApplicationModel;
 
@@ -48,19 +62,16 @@ namespace EssentialTimeLapseVideo
 
 		MediaCapture _mediaCapture;  //This is the basic capture that you pass to the xaml
 		StorageFile videoFile = null;  // This is the file that it will record to.  Changeable by user.
+		StorageFolder captureFolder;  //This defaults to the videos folder, that it has perms for.  OpenPicker, allows the user to save anywhere.
 		private MediaEncodingProfile _encodingProfile;  //These are setting attributes, going to do more with these in the future.
 		LowLagMediaRecording _mediaRecording;  //This is from one of the posts, it stems off diagnostics, something that will need to be beefed up.
-		StorageFolder captureFolder;  //This defaults to the videos folder, that it has perms for.  OpenPicker, allows the user to save anywhere.
 		bool isRecording = false;  // recording flag, not fully utilized yet.
-		int incognitoer = 0;
 		private static readonly Guid RotationKey = new Guid("C380465D-2271-428C-9B83-ECEA3B4A85C1");  //I have no idea what this is, but you need it :-)
-
-		int HowManySecondsBetween = 0;
 		private bool filejustcreated = false;
-
+		int HowManySecondsBetween = 0;
+		
 		public ResourceLoader languageLoader;
 		private StoreContext context = null;
-		private string thanks;
 		private string f;
 		StorageFolder ProjectFolder;
 		StorageFolder PictureLapsesFolder ;
@@ -72,7 +83,7 @@ namespace EssentialTimeLapseVideo
             this.InitializeComponent();
 
 			
-			ApplicationView.GetForCurrentView().Title = "Version " + GetAppVersion() + " ";
+			ApplicationView.GetForCurrentView().Title = "Version " + GetAppVersion() + " ";  
 			
 
 			composition = new MediaComposition();
@@ -84,6 +95,9 @@ namespace EssentialTimeLapseVideo
 
 		}
 
+
+		//This was copied form this Stack Overflow Entry
+		//https://stackoverflow.com/questions/28635208/retrieve-the-current-app-version-from-package/28635481#28635481
 		public static string GetAppVersion()
 		{
 
@@ -95,6 +109,12 @@ namespace EssentialTimeLapseVideo
 
 		}
 
+		//This just checks for the programs folder in the Video Folder
+		// if it isn't there, it creates it.  This is the reason it requires the Video folder
+
+		// It also checks this folder for project files.  The first project file in the 
+		//sequence that is not there, it will make the folder.
+		//even if you proj1 proj2  and then proj4, it will make the next one proj3
 		private async void CheckForVideoFolders()
 		{
 
@@ -135,6 +155,8 @@ namespace EssentialTimeLapseVideo
 			if (ProjectFolder == null) return;  //flag some sort of error.
 
 
+			//this is the subfolder that holds all the picture files.
+
 			PictureLapsesFolder =  await ProjectFolder.CreateFolderAsync("PictureLapsesFolder");
 
 			if (PictureLapsesFolder == null) return;  //flag some sort of error.
@@ -145,15 +167,15 @@ namespace EssentialTimeLapseVideo
 
 
 		}
+
+		//This is to init the two combo boxes 1-60for time, and seconds or minutes 
 		private void InitTimeAndFPS()
 		{
-			//ComboBoxItem j = new ComboBoxItem();
-			//j.Content = "Hours";
-			DarnSeconds z = new DarnSeconds();
-			//z.HowManyDarnSeconds = 60 * 60;
-			//j.Tag = z;
-			//HourMinuteSecond.Items.Add(j);
 
+			//had trouble with this, so made a little class, it did the trick, but could be reworked.
+			
+			DarnSeconds z = new DarnSeconds();
+			
 			
 			ComboBoxItem k = new ComboBoxItem();
 			k.Content = "Minutes";
@@ -187,7 +209,8 @@ namespace EssentialTimeLapseVideo
 			}
 			Interval.SelectedIndex = 0;
 
-
+			//This is the math for the frame per second of rendering calculation,
+			//it generates it in milliseconds.
 			decimal MilliForFPS = (decimal)1000;
 
 			looper = 61;
@@ -208,6 +231,11 @@ namespace EssentialTimeLapseVideo
 			FramesPerSecond.SelectedIndex = 9;
 
 		}
+
+
+		//This is taken right out of Essential Video Recorder, it records streaming video
+		//and was the first video app I made.  This one is different in that it takes frames
+		//and then renders them together.  EVR recorded straight video.
 
 		private async void InitCamera()
 
@@ -301,10 +329,7 @@ namespace EssentialTimeLapseVideo
 				//added to camera and settings initial setting
 				CameraSource.SelectedIndex = 0;
 				CameraSettings2.SelectedIndex = 0;
-				//await _mediaCapture.StartPreviewAsync();
-
-				// PopulateSettingsComboBox();
-
+				
 			}
 			catch (Exception e)
 			{
@@ -312,6 +337,11 @@ namespace EssentialTimeLapseVideo
 				BadSetting.Visibility = Visibility.Visible;
 			}
 		}
+
+
+		//This is taken right out of Essential Video Recorder, it records streaming video
+		//and was the first video app I made.  This one is different in that it takes frames
+		//and then renders them together.  EVR recorded straight video.
 
 
 		private void PopulateStreamPropertiesUI(MediaStreamType streamType, ComboBox comboBox, bool showFrameRate = true)
@@ -334,6 +364,11 @@ namespace EssentialTimeLapseVideo
 		}
 
 
+		//This is taken right out of Essential Video Recorder, it records streaming video
+		//and was the first video app I made.  This one is different in that it takes frames
+		//and then renders them together.  EVR recorded straight video.
+		
+			//It originally came from a Microsoft example somewhere.
 		private async void ComboBoxSettings_Changed(object sender, RoutedEventArgs e)
 		{
 
@@ -345,37 +380,11 @@ namespace EssentialTimeLapseVideo
 				if ((!isRecording) && (CameraSettings2.SelectedIndex > -1))
 				{
 
-					/*       if (!skipper)
-						   {
-							   skipper = !skipper;
-							   throw new Exception("Test Exception");
-						   }
-						   skipper = !skipper;
-						   */
+					
 					errIsCommon = "Reading Combo Settings";
 					ComboBoxItem selectedItem = (sender as ComboBox).SelectedItem as ComboBoxItem;
 					var encodingProperties = (selectedItem.Tag as StreamPropertiesHelper).EncodingProperties;
 
-					/*
-
-                    string grabResolution = selectedItem.Content.ToString();
-                    Single width = Convert.ToSingle(grabResolution.Substring(0, grabResolution.IndexOf('x')));
-
-
-
-
-
-                    Single height = Convert.ToSingle(grabResolution.Substring(grabResolution.IndexOf('x') + 1, grabResolution.IndexOf('[') - (grabResolution.IndexOf('x') + 2)));
-
-
-                    Single multiplyer = height / width;
-                    //Versatile.Width = Window.Current.Bounds.Width - 100;
-                    //Versatile.Height = (Window.Current.Bounds.Width - 100) * multiplyer;
-                    //Versatile.Width = width / 2;
-                    // Versatile.Height = height / 2;
-
-
-                */
 					errIsCommon = "MediaCapture Failure";
 					await _mediaCapture.VideoDeviceController.SetMediaStreamPropertiesAsync(MediaStreamType.VideoPreview, encodingProperties);
 
@@ -391,33 +400,27 @@ namespace EssentialTimeLapseVideo
 				BadSetting.Visibility = Visibility.Visible;
 
 			}
-			/*var selectedItem = (sender as ComboBox).SelectedItem as ComboBoxItem;
-
-			Resolutions encoderize = selectedItem.Tag as Resolutions;
-
-
-			Versatile.Height = encoderize.Height;
-			Versatile.Width = encoderize.Width;*/
-
-
-
-			// await _mediaCapture.VideoDeviceController.SetMediaStreamPropertiesAsync(MediaStreamType.VideoPreview, encodingProperties);
-
+			
 		}
 
+
+		//This is how the window sizing is wired, so you move the window and the video sizes appropriatley, 
+		//some of this is also in the xaml for the page.
 		private void Current_SizeChanged(object sender, Windows.UI.Core.WindowSizeChangedEventArgs e)
 		{
 
 
 			Versatile.Width = e.Size.Width;
 			Versatile.Height = e.Size.Height;
-			// GetTheVideo.Width = e.Size.Width;
-			//GetTheVideo.Height = e.Size.Height;
-
+		
 
 		}
 
-		
+
+		//This is taken right out of Essential Video Recorder, it records streaming video
+		//and was the first video app I made.  This one is different in that it takes frames
+		//and then renders them together.  EVR recorded straight video.
+
 
 		private async void _mediaCapture_Failed(MediaCapture sender, MediaCaptureFailedEventArgs errorEventArgs)
 		{
@@ -444,6 +447,12 @@ namespace EssentialTimeLapseVideo
 		}
 
 
+
+
+		//This is taken right out of Essential Video Recorder, it records streaming video
+		//and was the first video app I made.  This one is different in that it takes frames
+		//and then renders them together.  EVR recorded straight video.
+
 		private async void MediaCapture_RecordLimitationExceeded(MediaCapture sender)
 		{
 			try
@@ -460,7 +469,7 @@ namespace EssentialTimeLapseVideo
 			System.Diagnostics.Debug.WriteLine("Record limitation exceeded.");
 			isRecording = false;
 		}
-
+	
 		
 
 		private void Versatile_Tapped(object sender, TappedRoutedEventArgs e)
@@ -468,134 +477,19 @@ namespace EssentialTimeLapseVideo
 
 		}
 
-		/*private async void startRecording_Tapped(object sender, TappedRoutedEventArgs e)
-		{
-			try
-			{
-				isRecording = true;
-				//startRecording.Visibility = Visibility.Collapsed;
-
-
-
-
-				//VideoName.IsEnabled = false;
-				//GetFileName.IsEnabled = false;
-				CameraSettings2.IsEnabled = false;
-				CameraSource.IsEnabled = false;
-
-
-
-
-
-
-
-
-				_encodingProfile = MediaEncodingProfile.CreateMp4(VideoEncodingQuality.Auto);
-
-				// Create storage file for the capture
-
-				string vidname = "EssentialVideo.mp4";
-
-
-
-				if (videoFile == null)
-				{
-
-					videoFile = await captureFolder.CreateFileAsync(vidname, CreationCollisionOption.GenerateUniqueName);
-
-				}
-				else if (videoFile.Name.Contains("EssentialVideo"))
-				{
-					videoFile = await captureFolder.CreateFileAsync(vidname, CreationCollisionOption.GenerateUniqueName);
-
-				}
-				else if (videoFile.IsAvailable) { }
-				else
-				{
-					Debug.WriteLine("What should I do with this?" + videoFile.Path);
-				}
-				/*   {
-                       if (videoFile.IsAvailable) { } else await vidoeFile.
-
-                       vidname = videoFile.Name;
-
-                   }
-                   if (!filejustcreated)
-                   {
-                       videoFile = await captureFolder.CreateFileAsync(vidname, CreationCollisionOption.GenerateUniqueName);
-                   }
-                   else filejustcreated = false;
-          
-
-
-				Debug.WriteLine("Starting recording to " + videoFile.Path);
-
-				await _mediaCapture.StartRecordToStorageFileAsync(_encodingProfile, videoFile);
-				isRecording = true;
-
-				Debug.WriteLine("Started recording to: " + videoFile.Path);
-				stopRecording.Visibility = Visibility.Visible;
-			}
-			catch (Exception ex)
-			{
-				// File I/O errors are reported as exceptions
-				isRecording = false;
-				Debug.WriteLine(ex.Message);
-
-			}
-		}*/
-
+	
 		private  void stopCapture_Tapped(object sender, TappedRoutedEventArgs e)
 		{
 			isRecording = false;
 			PleaseWait.Visibility = Visibility.Visible;
 
 			
-			
-
-		/*	try
-			{
-			stopCapture.Visibility = Visibility.Collapsed;
-				render.Visibility = Visibility.Visible;
-				startCapture.Visibility = Visibility.Visible;
-
-				//await _mediaCapture.StopRecordAsync();
-				//VideoName.IsEnabled = true;
-				//GetFileName.IsEnabled = true;
-				CameraSettings2.IsEnabled = true;
-				CameraSource.IsEnabled = true;
-
-				IncrementProject.IsEnabled = true;
-				Interval.IsEnabled = true;
-				HourMinuteSecond.IsEnabled = true;
-				
-				
-				//startRecording.Visibility = Visibility.Visible;
-				//VideoName.Text = "Pick New File Name";
-				videoFile = null;
-
-			}
-			catch (Exception ex)
-			{
-				Debug.WriteLine(ex.Message);
-			}*/
+		
 		}
 
-		private async void GetFileName_Tapped(object sender, TappedRoutedEventArgs e)
-		{
+	
 
-			FileSavePicker fileSavePicker = new FileSavePicker();
-			fileSavePicker.FileTypeChoices.Add("MP4 video", new List<string>() { ".MP4" });
-			fileSavePicker.SuggestedStartLocation = PickerLocationId.VideosLibrary;
-			StorageFile file = await fileSavePicker.PickSaveFileAsync();
-			if (file != null)
-			{
-				videoFile = file;
-				//VideoName.Text = videoFile.Name;
-				filejustcreated = true;
 
-			}
-		}
 		private async void Devicechanged()
 		{
 			try
@@ -614,9 +508,6 @@ namespace EssentialTimeLapseVideo
 
 			try
 			{
-				//  int q = 1000;
-				//  do { q = 1000; do { q--; } while (q > 0); } while (CameraSource.Items.Count == 0); 
-
 				ComboBoxItem selectedItem = (ComboBoxItem)CameraSource.SelectedItem;
 
 				DeviceInformation gotCamera = selectedItem.Tag as DeviceInformation;
@@ -641,8 +532,6 @@ namespace EssentialTimeLapseVideo
 				streamType = MediaStreamType.VideoRecord;
 				PopulateStreamPropertiesUI(streamType, CameraSettings2);
 
-				//added to camera and settings initial setting
-				//CameraSource.SelectedIndex = 0;
 				CameraSettings2.SelectedIndex = 0;
 
 				await _mediaCapture.StartPreviewAsync();
@@ -677,6 +566,8 @@ namespace EssentialTimeLapseVideo
 
 		}
 
+
+		//This came from some sort of Microsoft Tutorial
 		public async void PurchaseAddOn(string storeId)
 		{
 
@@ -695,13 +586,7 @@ namespace EssentialTimeLapseVideo
 				StorePurchaseResult result = await context.RequestPurchaseAsync(storeId);
 				workingProgressRing.IsActive = false;
 
-				/*if (result.ExtendedError != null)
-                {
-                    // The user may be offline or there might be some other server failure.
-                    storeResult.Text = $"ExtendedError: {result.ExtendedError.Message}";
-                    storeResult.Visibility = Visibility.Visible;
-                    return;
-                }*/
+				
 
 				switch (result.Status)
 				{
@@ -743,6 +628,8 @@ namespace EssentialTimeLapseVideo
 			}
 		}
 
+		//These codes are set per app.  They will only run from the given app.
+
 		private void Donation1_Tapped(object sender, TappedRoutedEventArgs e)
 		{
 			PurchaseAddOn("9ntnk5dvbfj2");
@@ -763,34 +650,7 @@ namespace EssentialTimeLapseVideo
 		}
 
 
-		private async void TakePicture()
-		{
-			StorageFile z = await PictureLapsesFolder.CreateFileAsync("Lapses.png", CreationCollisionOption.GenerateUniqueName);
-			ImageEncodingProperties q = ImageEncodingProperties.CreatePng();
-			//q.Height = 400;
-			//q.Width = 400;
-
-
-			await _mediaCapture.CapturePhotoToStorageFileAsync(q, z);
-
-		}
-
-
-		/*private async void Reset_Tapped(object sender, TappedRoutedEventArgs e)
-		{
-
-
-			StorageFile z = await  KnownFolders.VideosLibrary.CreateFileAsync("Radio1.bmp", CreationCollisionOption.GenerateUniqueName);
-
-			ImageEncodingProperties q = ImageEncodingProperties.CreateBmp();
-			//q.Height = 400;
-			//q.Width = 400;
-
-
-			await _mediaCapture.CapturePhotoToStorageFileAsync(q, z);
-
-
-		}*/
+		
 
 		private async void FrameCapture()
 		{
@@ -804,22 +664,9 @@ namespace EssentialTimeLapseVideo
 
 			QueryOptions queryOptions = new QueryOptions(CommonFileQuery.DefaultQuery, fileTypeFilter);
 
-			//queryOptions = CommonFileQuery.OrderByName;
-
+		
 			queryOptions.UserSearchFilter = "Lapses";
-			//StorageFileQueryResult queryResult = musicFolder.CreateFileQueryWithOptions(queryOptions);
-
-
-			//use the user's input to make a query
-			//`````````````````//queryOptions.UserSearchFilter = InputTextBox.Text;
-			//StorageFileQueryResult queryResult = musicFolder.CreateFileQueryWithOptions(queryOptions);
-
-
-			//Windows.Storage.Search.CommonFileQuery.GetName("*.bmp");
-
-
-			//qbert.
-
+			
 			StorageFileQueryResult z = PictureLapsesFolder.CreateFileQueryWithOptions(queryOptions);
 
 			IReadOnlyList<StorageFile> files = await z.GetFilesAsync();
@@ -832,19 +679,7 @@ namespace EssentialTimeLapseVideo
 
 
 			files.OrderBy(x => x.DateCreated);
-			/*
-			var picker = new Windows.Storage.Pickers.FileOpenPicker();
-			picker.SuggestedStartLocation = Windows.Storage.Pickers.PickerLocationId.PicturesLibrary;
-			picker.FileTypeFilter.Add(".png");
-			Windows.Storage.StorageFile pickedFile = await picker.PickSingleFileAsync();
-			if (pickedFile == null)
-			{
-				//ShowErrorMessage("File picking cancelled");
-				return;
-			}
-
-
-	*/
+		
 
 			String framesPS = (FramesPerSecond.SelectedIndex + 1).ToString("D2");
 
@@ -860,9 +695,6 @@ namespace EssentialTimeLapseVideo
 
 			foreach (StorageFile j in files)
 			{
-				//pickerVid.SuggestedStartLocation = Windows.Storage.Pickers.PickerLocationId.VideosLibrary;
-				//pickerVid.FileTypeFilter.Add(".mp4");
-				//ndows.Storage.StorageFile pickedVidFile = await localFolder.CreateFileAsync(desiredName, CreationCollisionOption.GenerateUniqueName);
 				if (j== null)
 				{
 					//ShowErrorMessage("File picking cancelled");
@@ -880,9 +712,7 @@ namespace EssentialTimeLapseVideo
 
 			}
 
-				//MediaStreamSource MediaStreamSample = composition.GeneratePreviewMediaStreamSource(400, 400);
-
-			//AnythingWorking.SetMediaStreamSource(MediaStreamSample);  This was a media source type in the xaml.
+		
 
 
 			await composition.RenderToFileAsync(pickedVidFile);
@@ -900,18 +730,6 @@ namespace EssentialTimeLapseVideo
 
 		private void HourMinuteSecond_SelectionChanged(object sender, SelectionChangedEventArgs e)
 		{
-			/*Interval.Items.Clear();
-
-
-			
-
-			DarnSeconds f =(DarnSeconds) ((ComboBoxItem)HourMinuteSecond.SelectedItem).Tag;
-			int looper = 25;
-			if ((f.HowManyDarnSeconds == 1) || (f.HowManyDarnSeconds == 60)) looper = 61;
-			
-				
-
-			Interval.SelectedIndex = 0;*/
 		}
 
 		private void GetProjectName_Tapped(object sender, TappedRoutedEventArgs e)
@@ -958,7 +776,7 @@ namespace EssentialTimeLapseVideo
 			DarnSeconds j = (DarnSeconds)((ComboBoxItem)Interval.SelectedItem).Tag;
 
 			String k = (string)((ComboBoxItem)HourMinuteSecond.SelectedItem).Content;
-			//j.HowManyDarnSeconds;
+		
 
 			if (k  == "Hours")
 			{
@@ -978,20 +796,13 @@ namespace EssentialTimeLapseVideo
 			isRecording = true;
 			stopCapture.Visibility = Visibility.Visible;
 
-		//	if (_mediaCapture == null)
-		//	{
-		//		await _mediaCapture.InitializeAsync();
-		//	}
-
+		
 			while (isRecording)
 			{
 				
-				//if (i++ > 300) isRecording = false;
-				StorageFile z = await PictureLapsesFolder.CreateFileAsync("Lapses.png", CreationCollisionOption.GenerateUniqueName);
+			StorageFile z = await PictureLapsesFolder.CreateFileAsync("Lapses.png", CreationCollisionOption.GenerateUniqueName);
 				ImageEncodingProperties q = ImageEncodingProperties.CreatePng();
-				//q.Height = 400;
-				//q.Width = 400;
-
+			
 
 				await _mediaCapture.CapturePhotoToStorageFileAsync(q, z);
 				await Task.Delay(HowManySecondsBetween * 1000);
@@ -1005,20 +816,15 @@ namespace EssentialTimeLapseVideo
 			IncrementProject.IsEnabled = true;
 			IncrementProject.Opacity = 1.0;
 
-			//Interval.IsEnabled = false;
 			Interval.Visibility = Visibility.Visible;
 			tbInterval.Visibility = Visibility.Collapsed;
-			//tbInterval.Text = (string)((ComboBoxItem)Interval.SelectedItem).Content;
 			HourMinuteSecond.Visibility = Visibility.Visible;
-			//tbHourMinuteSecond.Text = (string)((ComboBoxItem)HourMinuteSecond.SelectedItem).Content;
 			tbHourMinuteSecond.Visibility = Visibility.Collapsed;
 			CameraSource.Visibility = Visibility.Visible;
 			tbCameraSource.Visibility = Visibility.Collapsed;
-			//tbCameraSource.Text = (string)((ComboBoxItem)CameraSource.SelectedItem).Content;
-
+			
 			CameraSettings2.Visibility = Visibility.Visible;
 			tbCameraSetting.Visibility = Visibility.Collapsed;
-			//tbCameraSetting.Text = (string)((ComboBoxItem)CameraSettings2.SelectedItem).Content;
 			stopCapture.Visibility = Visibility.Collapsed;
 			startCapture.Visibility = Visibility.Visible;
 			PleaseWait.Visibility = Visibility.Collapsed;
@@ -1057,9 +863,6 @@ namespace EssentialTimeLapseVideo
 			ManyThanks.Visibility = Visibility.Collapsed;
 
 
-
-			// Versatile.Height = 480;
-			//Versatile.Width = 640;
 			NoFiles.Visibility = Visibility.Collapsed;
 			BadDevice.Visibility = Visibility.Collapsed;
 			BadSetting.Visibility = Visibility.Collapsed;
@@ -1071,8 +874,6 @@ namespace EssentialTimeLapseVideo
 
 			Interval.SelectedIndex = 0;
 
-
-			//CameraSettings2.SelectedIndex = -1;
 
 		}
 		private void render_Tapped(object sender, TappedRoutedEventArgs e)
@@ -1093,11 +894,11 @@ namespace EssentialTimeLapseVideo
 
 		private void HelpPage_Tapped(object sender, TappedRoutedEventArgs e)
 		{
-			//Help j;
+			
 		
 			Frame.Navigate(typeof(Help));
 			
-			//j.Visibility = Visibility.Visible;
+			
 	
 		}
 
