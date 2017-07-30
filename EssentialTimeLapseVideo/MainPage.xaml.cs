@@ -2,9 +2,9 @@
             Program: Essential Time Lapse Video
             Author:  John Leone
             Email:   gibbloggen@gmail.com
-            Date:    9-10-2016
+            Date:    7-4-2017
             License: MIT License
-            Purpose: A Universal Windows app for both win 10 desktop and mobile
+            Purpose: A Universal Windows app for win 10 desktop
 
 
 
@@ -574,7 +574,7 @@ namespace EssentialTimeLapseVideo
 
 			try
 			{
-
+				
 
 				if (context == null)
 				{
@@ -597,6 +597,7 @@ namespace EssentialTimeLapseVideo
 
 					case StorePurchaseStatus.Succeeded:
 						//storeResult.Text = "The purchase was successful.";
+						ManyThanks.Text = "Many Thanks!";
 						ManyThanks.Visibility = Visibility.Visible;
 						break;
 

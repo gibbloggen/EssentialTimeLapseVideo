@@ -50,6 +50,9 @@ namespace EssentialTimeLapseVideo
 
 		private void BackToProgram_Tapped(object sender, TappedRoutedEventArgs e)
 		{
+			Uri j = new Uri("http://asdfasdfkljhflakjshlsdf.dog/");
+			HelpView.Navigate(j);
+
 			Frame.Navigate(typeof(MainPage));
 
 
@@ -69,6 +72,8 @@ namespace EssentialTimeLapseVideo
 
 		private void Current_Closed(object sender, EventArgs e)
 		{
+			Uri j = new Uri("http://asdfasdfkljhflakjshlsdf.dog/");
+			HelpView.Navigate(j);
 
 			Frame.Navigate(typeof(MainPage));
 		}
